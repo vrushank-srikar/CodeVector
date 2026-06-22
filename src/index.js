@@ -1,6 +1,7 @@
 'use strict';
 require('dotenv').config();
 
+const path                = require('path');
 const express             = require('express');
 const { testConnection }  = require('./db');
 const productsRouter      = require('./routes/products');
@@ -18,6 +19,9 @@ app.use((_req, res, next) => {
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
   next();
 });
+
+// Serve the frontend from /public
+app.use(express.static(path.join(__dirname, '..', 'public')));
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date() }));

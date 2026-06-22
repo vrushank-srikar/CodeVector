@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Product Catalog — CodeVector</title>
+  <meta name="description" content="Browse 200,000 products with fast keyset pagination, category filtering, and real-time stability." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0a0f;
+      --surface:   #13131a;
+      --surface2:  #1c1c28;
+      --border:    rgba(255,255,255,0.07);
+      --accent:    #7c6bff;
+      --accent2:   #a78bfa;
+      --green:     #22c55e;
+      --text:      #e2e8f0;
+      --muted:     #64748b;
+      --radius:    14px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    /* ── Header ─────────────────────────────────── */
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(10,10,15,0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+      padding: 0 2rem;
+    }
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 64px;
+      gap: 1rem;
+    }
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-decoration: none;
+    }
+    .logo-icon {
+      width: 34px; height: 34px;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      border-radius: 9px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .logo-text { font-weight: 700; font-size: 1.05rem; color: var(--text); }
+    .logo-text span { color: var(--accent2); }
+
+    .header-stats {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .stat-pill {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface2);
+      border: 1px solid var(--border);
+      padding: 4px 12px;
+      border-radius: 100px;
+    }
+    .stat-pill .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
+    .stat-pill.live .dot { animation: pulse 2s infinite; }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.3; }
+    }
+
+    /* ── Hero ────────────────────────────────────── */
+    .hero {
+      text-align: center;
+      padding: 4rem 2rem 2rem;
+      max-width: 680px;
+      margin: 0 auto;
+    }
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124,107,255,0.12);
+      border: 1px solid rgba(124,107,255,0.3);
+      color: var(--accent2);
+      padding: 5px 14px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      margin-bottom: 1.25rem;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .hero h1 {
+      font-size: clamp(1.8rem, 4vw, 2.8rem);
+      font-weight: 700;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 0.75rem;
+      background: linear-gradient(135deg, #fff 40%, var(--accent2));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .hero p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      max-width: 480px;
+      margin: 0 auto;
+    }
+
+    /* ── Filters ─────────────────────────────────── */
+    .filters-wrap {
+      max-width: 1280px;
+      margin: 2rem auto 0;
+      padding: 0 2rem;
+    }
+    .filters-bar {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+    .filter-label {
+      font-size: 0.75rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      font-weight: 500;
+      margin-right: 4px;
+      white-space: nowrap;
+    }
+    .filter-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+    .pill {
+      cursor: pointer;
+      padding: 6px 16px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      color: var(--muted);
+      transition: all 0.18s ease;
+      white-space: nowrap;
+      user-select: none;
+    }
+    .pill:hover { border-color: var(--accent); color: var(--accent2); }
+    .pill.active {
+      background: rgba(124,107,255,0.15);
+      border-color: var(--accent);
+      color: var(--accent2);
+    }
+
+    .results-info {
+      max-width: 1280px;
+      margin: 1.25rem auto 0;
+      padding: 0 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+    .results-info strong { color: var(--text); }
+
+    /* ── Grid ────────────────────────────────────── */
+    .grid-wrap {
+      max-width: 1280px;
+      margin: 1.25rem auto 0;
+      padding: 0 2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ── Card ────────────────────────────────────── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      animation: fadeUp 0.35s ease both;
+    }
+    .card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(124,107,255,0.3);
+      box-shadow: 0 8px 32px rgba(124,107,255,0.08);
+    }
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-top {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+    .card-name {
+      font-weight: 600;
+      font-size: 0.92rem;
+      color: var(--text);
+      line-height: 1.4;
+    }
+    .cat-badge {
+      flex-shrink: 0;
+      padding: 3px 10px;
+      border-radius: 100px;
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .card-footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: auto;
+    }
+    .card-price {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+    .card-price span { font-size: 0.75rem; font-weight: 400; color: var(--muted); }
+    .card-date {
+      font-size: 0.72rem;
+      color: var(--muted);
+    }
+    .card-id {
+      font-size: 0.7rem;
+      color: var(--muted);
+      font-family: monospace;
+    }
+
+    /* category colors */
+    .cat-Electronics    { background: rgba(59,130,246,0.15); color:#60a5fa; }
+    .cat-Clothing       { background: rgba(236,72,153,0.15); color:#f472b6; }
+    .cat-Books          { background: rgba(234,179,8,0.15);  color:#facc15; }
+    .cat-Sports         { background: rgba(34,197,94,0.15);  color:#4ade80; }
+    .cat-Home           { background: rgba(249,115,22,0.15); color:#fb923c; }
+    .cat-Beauty         { background: rgba(168,85,247,0.15); color:#c084fc; }
+    .cat-Toys           { background: rgba(20,184,166,0.15); color:#2dd4bf; }
+    .cat-Food           { background: rgba(239,68,68,0.15);  color:#f87171; }
+    .cat-Automotive     { background: rgba(100,116,139,0.15);color:#94a3b8; }
+    .cat-Health         { background: rgba(16,185,129,0.15); color:#34d399; }
+
+    /* ── Load More ───────────────────────────────── */
+    .load-more-wrap {
+      max-width: 1280px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+      text-align: center;
+    }
+    #load-more-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: linear-gradient(135deg, var(--accent), #6366f1);
+      color: #fff;
+      border: none;
+      padding: 13px 36px;
+      border-radius: 100px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s, transform 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    #load-more-btn:hover:not(:disabled) { opacity: 0.88; transform: translateY(-1px); }
+    #load-more-btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+    .spinner {
+      width: 16px; height: 16px;
+      border: 2px solid rgba(255,255,255,0.4);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      display: none;
+    }
+    #load-more-btn.loading .spinner { display: block; }
+    #load-more-btn.loading .btn-text { opacity: 0.7; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .end-message {
+      color: var(--muted);
+      font-size: 0.85rem;
+      padding: 1rem 0 2rem;
+    }
+
+    /* ── Skeleton ────────────────────────────────── */
+    .skeleton {
+      background: linear-gradient(90deg, var(--surface) 25%, var(--surface2) 50%, var(--surface) 75%);
+      background-size: 400% 100%;
+      animation: shimmer 1.4s infinite;
+      border-radius: 8px;
+    }
+    @keyframes shimmer { to { background-position: -400% 0; } }
+
+    .skeleton-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 1.25rem;
+      display: flex; flex-direction: column; gap: 0.75rem;
+    }
+    .sk-line { height: 12px; border-radius: 6px; }
+
+    /* ── Empty / Error ───────────────────────────── */
+    .empty-state {
+      text-align: center;
+      padding: 5rem 2rem;
+      color: var(--muted);
+      grid-column: 1/-1;
+    }
+    .empty-state .icon { font-size: 3rem; margin-bottom: 1rem; }
+    .empty-state h3 { color: var(--text); margin-bottom: 0.5rem; }
+
+    /* ── Footer ──────────────────────────────────── */
+    footer {
+      border-top: 1px solid var(--border);
+      text-align: center;
+      padding: 2rem;
+      margin-top: 3rem;
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+    footer a { color: var(--accent2); text-decoration: none; }
+
+    @media (max-width: 640px) {
+      .header-stats { display: none; }
+      .hero { padding: 2.5rem 1.25rem 1.5rem; }
+      .filters-wrap, .results-info, .grid-wrap, .load-more-wrap { padding: 0 1.25rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── Header ─────────────────────────────── -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/">
+      <div class="logo-icon">⚡</div>
+      <span class="logo-text">Code<span>Vector</span></span>
+    </a>
+    <div class="header-stats">
+      <div class="stat-pill live">
+        <span class="dot"></span>
+        <span id="total-count">Loading...</span> products
+      </div>
+      <div class="stat-pill">
+        <span>Keyset pagination</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ── Hero ───────────────────────────────── -->
+<div class="hero">
+  <div class="hero-badge">⚡ 200,000 products · Fast pagination</div>
+  <h1>Browse the Product Catalog</h1>
+  <p>Stable cursor pagination — new products never cause duplicates or missing items as you browse.</p>
+</div>
+
+<!-- ── Filters ────────────────────────────── -->
+<div class="filters-wrap">
+  <div class="filters-bar">
+    <span class="filter-label">Category</span>
+    <div class="filter-pills" id="filter-pills">
+      <div class="pill active" data-category="">All Products</div>
+    </div>
+  </div>
+</div>
+
+<!-- ── Results Info ───────────────────────── -->
+<div class="results-info">
+  <span id="results-label">Loading products…</span>
+  <span id="cursor-info" style="font-family:monospace;font-size:0.72rem;"></span>
+</div>
+
+<!-- ── Product Grid ───────────────────────── -->
+<div class="grid-wrap">
+  <div class="grid" id="product-grid">
+    <!-- skeleton cards -->
+    <div class="skeleton-card" id="sk1"><div class="sk-line skeleton" style="width:60%"></div><div class="sk-line skeleton" style="width:40%"></div><div class="sk-line skeleton" style="width:80%;margin-top:8px"></div></div>
+    <div class="skeleton-card" id="sk2"><div class="sk-line skeleton" style="width:55%"></div><div class="sk-line skeleton" style="width:35%"></div><div class="sk-line skeleton" style="width:70%;margin-top:8px"></div></div>
+    <div class="skeleton-card" id="sk3"><div class="sk-line skeleton" style="width:65%"></div><div class="sk-line skeleton" style="width:45%"></div><div class="sk-line skeleton" style="width:75%;margin-top:8px"></div></div>
+    <div class="skeleton-card" id="sk4"><div class="sk-line skeleton" style="width:50%"></div><div class="sk-line skeleton" style="width:42%"></div><div class="sk-line skeleton" style="width:68%;margin-top:8px"></div></div>
+    <div class="skeleton-card" id="sk5"><div class="sk-line skeleton" style="width:72%"></div><div class="sk-line skeleton" style="width:38%"></div><div class="sk-line skeleton" style="width:85%;margin-top:8px"></div></div>
+    <div class="skeleton-card" id="sk6"><div class="sk-line skeleton" style="width:48%"></div><div class="sk-line skeleton" style="width:52%"></div><div class="sk-line skeleton" style="width:60%;margin-top:8px"></div></div>
+  </div>
+</div>
+
+<!-- ── Load More ──────────────────────────── -->
+<div class="load-more-wrap">
+  <button id="load-more-btn" disabled>
+    <div class="spinner"></div>
+    <span class="btn-text">Load More</span>
+  </button>
+  <p class="end-message" id="end-message" style="display:none;">
+    🎉 You've reached the end — all products loaded!
+  </p>
+</div>
+
+<!-- ── Footer ────────────────────────────── -->
+<footer>
+  Built with Node.js + MySQL · Keyset (cursor) pagination ·
+  <a href="https://github.com/vrushank-srikar/CodeVector" target="_blank">GitHub ↗</a>
+</footer>
+
+<script>
+  // ── Config ──────────────────────────────────────────────────────────────────
+  // When served from the same origin (Railway), use relative URLs.
+  const API = '';
+  const PAGE_SIZE = 24;
+
+  // ── State ───────────────────────────────────────────────────────────────────
+  let cursor      = null;   // current pagination cursor
+  let hasMore     = true;
+  let loading     = false;
+  let activeCategory = '';
+  let totalShown  = 0;
+
+  // Category → CSS class slug (strip spaces & special chars)
+  const catSlug = (cat) => cat.split(/[^a-zA-Z]/)[0];
+
+  // ── Category colors map ─────────────────────────────────────────────────────
+  const CAT_CLASS = {
+    'Electronics': 'cat-Electronics',
+    'Clothing':    'cat-Clothing',
+    'Books':       'cat-Books',
+    'Sports & Outdoors': 'cat-Sports',
+    'Home & Garden':     'cat-Home',
+    'Beauty':      'cat-Beauty',
+    'Toys & Games':'cat-Toys',
+    'Food & Grocery':'cat-Food',
+    'Automotive':  'cat-Automotive',
+    'Health & Wellness':'cat-Health',
+  };
+  const catClass = (cat) => CAT_CLASS[cat] || 'cat-Electronics';
+
+  // ── DOM refs ────────────────────────────────────────────────────────────────
+  const grid       = document.getElementById('product-grid');
+  const btn        = document.getElementById('load-more-btn');
+  const endMsg     = document.getElementById('end-message');
+  const resultsLbl = document.getElementById('results-label');
+  const cursorInfo = document.getElementById('cursor-info');
+  const totalCount = document.getElementById('total-count');
+  const pillsWrap  = document.getElementById('filter-pills');
+
+  // ── Helpers ─────────────────────────────────────────────────────────────────
+  const fmt = {
+    price: (p) => '$' + Number(p).toFixed(2).replace(/\B(?=(\d{3})+(?!\d))/g, ','),
+    date:  (d) => new Date(d).toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' }),
+  };
+
+  function setLoading(state) {
+    loading = state;
+    btn.classList.toggle('loading', state);
+    btn.disabled = state || !hasMore;
+  }
+
+  function clearSkeletons() {
+    ['sk1','sk2','sk3','sk4','sk5','sk6'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el) el.remove();
+    });
+  }
+
+  // ── Render cards ────────────────────────────────────────────────────────────
+  function renderCards(products) {
+    products.forEach((p, i) => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.style.animationDelay = `${i * 0.03}s`;
+
+      const cls = catClass(p.category);
+      card.innerHTML = `
+        <div class="card-top">
+          <div class="card-name">${escHtml(p.name)}</div>
+          <span class="cat-badge ${cls}">${escHtml(p.category)}</span>
+        </div>
+        <div class="card-footer">
+          <div class="card-price">${fmt.price(p.price)}</div>
+          <div class="card-date">${fmt.date(p.created_at)}</div>
+        </div>
+        <div class="card-id">#${p.id}</div>
+      `;
+      grid.appendChild(card);
+    });
+  }
+
+  function escHtml(str) {
+    return str.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ── Fetch a page ────────────────────────────────────────────────────────────
+  async function fetchPage() {
+    if (loading || !hasMore) return;
+    setLoading(true);
+
+    try {
+      const params = new URLSearchParams({ limit: PAGE_SIZE });
+      if (activeCategory) params.set('category', activeCategory);
+      if (cursor)         params.set('cursor', cursor);
+
+      const res  = await fetch(`${API}/products?${params}`);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+
+      clearSkeletons();
+
+      if (json.data.length === 0 && totalShown === 0) {
+        grid.innerHTML = `
+          <div class="empty-state">
+            <div class="icon">📭</div>
+            <h3>No products found</h3>
+            <p>Try selecting a different category.</p>
+          </div>`;
+      } else {
+        renderCards(json.data);
+      }
+
+      totalShown += json.data.length;
+      cursor      = json.meta.nextCursor;
+      hasMore     = json.meta.hasMore;
+
+      // Update UI state
+      resultsLbl.innerHTML = `Showing <strong>${totalShown.toLocaleString()}</strong> products${activeCategory ? ` in <strong>${activeCategory}</strong>` : ''}`;
+      if (cursor) {
+        cursorInfo.textContent = `cursor: ${cursor.slice(0,20)}…`;
+        cursorInfo.title = cursor;
+      } else {
+        cursorInfo.textContent = '';
+      }
+
+      if (!hasMore) {
+        btn.style.display = 'none';
+        endMsg.style.display = 'block';
+      } else {
+        btn.style.display  = 'inline-flex';
+        endMsg.style.display = 'none';
+      }
+
+    } catch (err) {
+      clearSkeletons();
+      grid.innerHTML += `
+        <div class="empty-state">
+          <div class="icon">⚠️</div>
+          <h3>Failed to load products</h3>
+          <p>${err.message}</p>
+        </div>`;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // ── Load categories ──────────────────────────────────────────────────────────
+  async function loadCategories() {
+    try {
+      const res  = await fetch(`${API}/products/categories`);
+      const json = await res.json();
+
+      json.categories.forEach(cat => {
+        const pill = document.createElement('div');
+        pill.className  = 'pill';
+        pill.dataset.category = cat;
+        pill.textContent = cat;
+        pill.addEventListener('click', () => selectCategory(cat));
+        pillsWrap.appendChild(pill);
+      });
+
+      // Update live count header
+      totalCount.textContent = '200,000';
+    } catch {
+      totalCount.textContent = '200k';
+    }
+  }
+
+  // ── Category selection ────────────────────────────────────────────────────────
+  function selectCategory(cat) {
+    if (cat === activeCategory) return;
+    activeCategory = cat;
+    cursor         = null;
+    hasMore        = true;
+    totalShown     = 0;
+
+    // Update active pill
+    document.querySelectorAll('.pill').forEach(p => {
+      p.classList.toggle('active', p.dataset.category === cat);
+    });
+
+    // Reset grid
+    grid.innerHTML = '';
+    btn.style.display   = 'inline-flex';
+    endMsg.style.display = 'none';
+    resultsLbl.textContent = 'Loading…';
+
+    fetchPage();
+  }
+
+  // ── "All Products" pill click ─────────────────────────────────────────────────
+  pillsWrap.querySelector('[data-category=""]').addEventListener('click', () => {
+    selectCategory('');
+  });
+
+  // ── Load More button ─────────────────────────────────────────────────────────
+  btn.addEventListener('click', fetchPage);
+
+  // ── Init ─────────────────────────────────────────────────────────────────────
+  (async () => {
+    await loadCategories();
+    await fetchPage();
+  })();
+</script>
+</body>
+</html>
