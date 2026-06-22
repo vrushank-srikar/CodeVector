@@ -20,8 +20,13 @@ app.use((_req, res, next) => {
   next();
 });
 
-// Serve the frontend from /public
-app.use(express.static(path.join(__dirname, '..', 'public')));
+// Serve the frontend — use process.cwd() so path works in both Docker and Nixpacks
+app.use(express.static(path.join(process.cwd(), 'public')));
+
+// Explicit fallback for root so browsers always get the HTML
+app.get('/', (_req, res) => {
+  res.sendFile(path.join(process.cwd(), 'public', 'index.html'));
+});
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
 app.get('/health', (_req, res) => res.json({ status: 'ok', ts: new Date() }));
