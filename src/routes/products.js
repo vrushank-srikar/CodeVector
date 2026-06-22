@@ -143,8 +143,8 @@ router.get('/', async (req, res) => {
       meta: { count: data.length, hasMore, nextCursor },
     });
   } catch (err) {
-    console.error('[products] Query error:', err.message);
-    return res.status(500).json({ error: 'Internal server error' });
+    console.error('[products] Query error:', err.message, '| SQL state:', err.sqlState, '| Code:', err.code);
+    return res.status(500).json({ error: 'Internal server error', detail: err.message });
   }
 });
 
