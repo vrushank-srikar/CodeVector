@@ -24,7 +24,8 @@ const pool = mysql.createPool({
 // Runs automatically on every startup — safe to call repeatedly (IF NOT EXISTS).
 // This means no manual SQL steps are needed on any deployment target.
 async function initSchema() {
-  await pool.execute(`
+  // Must use query() not execute() — DDL cannot use prepared statements
+  await pool.query(`
     CREATE TABLE IF NOT EXISTS products (
       id          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
       name        VARCHAR(255)    NOT NULL,
@@ -32,13 +33,8 @@ async function initSchema() {
       price       DECIMAL(10, 2)  NOT NULL,
       created_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
       updated_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
-
       PRIMARY KEY (id),
-
-      -- Supports: ORDER BY created_at DESC, id DESC  (no category filter)
       INDEX idx_cursor (created_at DESC, id DESC),
-
-      -- Supports: WHERE category = ? ORDER BY created_at DESC, id DESC
       INDEX idx_category_cursor (category, created_at DESC, id DESC)
     ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
   `);

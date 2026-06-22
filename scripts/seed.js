@@ -86,11 +86,27 @@ async function seed() {
 
   console.log('✔  Connected to MySQL');
 
+  // Ensure table exists before truncating — makes seed self-contained
+  console.log('    Ensuring schema exists...');
+  await conn.query(`
+    CREATE TABLE IF NOT EXISTS products (
+      id          INT UNSIGNED    NOT NULL AUTO_INCREMENT,
+      name        VARCHAR(255)    NOT NULL,
+      category    VARCHAR(100)    NOT NULL,
+      price       DECIMAL(10, 2)  NOT NULL,
+      created_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+      updated_at  DATETIME(3)     NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+      PRIMARY KEY (id),
+      INDEX idx_cursor (created_at DESC, id DESC),
+      INDEX idx_category_cursor (category, created_at DESC, id DESC)
+    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+  `);
+
   // Clear any existing data
   console.log('    Truncating products table...');
-  await conn.execute('SET FOREIGN_KEY_CHECKS = 0');
-  await conn.execute('TRUNCATE TABLE products');
-  await conn.execute('SET FOREIGN_KEY_CHECKS = 1');
+  await conn.query('SET FOREIGN_KEY_CHECKS = 0');
+  await conn.query('TRUNCATE TABLE products');
+  await conn.query('SET FOREIGN_KEY_CHECKS = 1');
 
   console.log(`\n⏳  Seeding ${TOTAL.toLocaleString()} products`);
   console.log(`    (${TOTAL / BATCH_SIZE} batches × ${BATCH_SIZE} rows each)\n`);
