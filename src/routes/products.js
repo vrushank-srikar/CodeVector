@@ -119,17 +119,21 @@ router.get('/', async (req, res) => {
 
   // 3. Fetch limit+1 rows — the extra row tells us if a next page exists
   //    without a separate COUNT query.
+  //
+  //  NOTE: We use pool.query() (client-side escaping) instead of pool.execute()
+  //  (server-side prepared statements) because MySQL 9.x rejects LIMIT with a
+  //  bound parameter ('Incorrect arguments to mysqld_stmt_execute').
+  //  limit is validated as a safe integer by zod, so interpolating it is fine.
   const sql = `
     SELECT id, name, category, price, created_at, updated_at
     FROM   products
     ${where}
     ORDER  BY created_at DESC, id DESC
-    LIMIT  ?
+    LIMIT  ${limit + 1}
   `;
-  params.push(limit + 1);
 
   try {
-    const [rows] = await pool.execute(sql, params);
+    const [rows] = await pool.query(sql, params);
 
     const hasMore  = rows.length > limit;
     const data     = hasMore ? rows.slice(0, limit) : rows;

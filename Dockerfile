@@ -2,12 +2,14 @@ FROM node:20-alpine
 
 WORKDIR /app
 
-# Install dependencies first (layer cache optimization)
+# Cache npm install layer separately
 COPY package*.json ./
 RUN npm ci --only=production
 
-# Copy source
-COPY . .
+# Explicitly copy each directory so nothing is missed
+COPY src/   ./src/
+COPY scripts/ ./scripts/
+COPY public/  ./public/
 
 EXPOSE 3000
 
